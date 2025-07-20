@@ -2,59 +2,245 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gunting Batu Kertas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Russian Roulette: Rock Paper Scissors</title>
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #1e1e1e, #000);
+      color: #fff;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      padding-top: 50px;
-      background-color: #f0f0f0;
     }
+
     h1 {
-      color: #333;
+      padding: 30px 0 10px;
+      color: #f44336;
     }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .duel-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 100px;
+      margin-top: 30px;
+    }
+
+    .player-box {
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: #333;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      border: 3px solid #fff;
+      margin: 0 auto;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .avatar.dead {
+      color: red;
+      border-color: red;
+      text-decoration: line-through;
+    }
+
+    .label {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ccc;
+    }
+
+    .health {
+      height: 24px;
+      font-size: 22px;
+      margin-top: 8px;
+      color: #f44336;
+      min-height: 24px;
+    }
+
+    .emoji-move {
+      font-size: 60px;
+      margin-top: 10px;
+      min-height: 60px;
+    }
+
+    .vs {
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .choices {
+      margin-top: 40px;
+    }
+
     .choices button {
       font-size: 20px;
-      padding: 10px 20px;
-      margin: 10px;
+      padding: 10px 25px;
+      margin: 8px;
+      background-color: #37474f;
+      color: white;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
+
+    .choices button:hover {
+      background-color: #546e7a;
+    }
+
     .result {
-      margin-top: 20px;
+      margin-top: 30px;
       font-size: 24px;
-      color: #007acc;
+      color: #ffee58;
+      min-height: 30px;
+    }
+
+    .game-over {
+      font-size: 28px;
+      color: #ff8a80;
+      margin-top: 20px;
+      min-height: 32px;
+    }
+
+    footer {
+      padding: 20px 0;
+      font-size: 14px;
+      color: #aaa;
+      width: 100%;
+      text-align: center;
+    }
+
+    footer a {
+      color: #80cbc4;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <h1>Gunting Batu Kertas ✌️✊🖐️</h1>
-  <div class="choices">
-    <button onclick="play('gunting')">Gunting ✌️</button>
-    <button onclick="play('batu')">Batu ✊</button>
-    <button onclick="play('kertas')">Kertas 🖐️</button>
+
+  <h1>🎯 Russian Roulette: Rock Paper Scissors</h1>
+
+  <div class="main-container">
+    <div class="duel-container">
+      <div class="player-box">
+        <div id="playerAvatar" class="avatar">YOU</div>
+        <div class="label">Player</div>
+        <div class="health" id="playerHealth">❤️❤️❤️❤️❤️</div>
+        <div class="emoji-move" id="playerMove">❓</div>
+      </div>
+
+      <div class="vs">VS</div>
+
+      <div class="player-box">
+        <div id="botAvatar" class="avatar">BOT</div>
+        <div class="label">Enemy</div>
+        <div class="health" id="botHealth">❤️❤️❤️❤️❤️</div>
+        <div class="emoji-move" id="botMove">❓</div>
+      </div>
+    </div>
+
+    <div class="choices">
+      <button onclick="play('scissors')">✌️ Scissors</button>
+      <button onclick="play('rock')">✊ Rock</button>
+      <button onclick="play('paper')">🖐️ Paper</button>
+    </div>
+
+    <div class="result" id="result">Choose your weapon...</div>
+    <div class="game-over" id="gameOver"></div>
   </div>
-  <div class="result" id="result"></div>
+
+  <footer>
+    Designed & coded with 💻 by 
+    <a href="https://github.com/grendyaditya" target="_blank">Grendy Aditya </a> — © 2025
+  </footer>
 
   <script>
+    let playerLives = 5;
+    let botLives = 5;
+    const emojis = {
+      'scissors': '✌️',
+      'rock': '✊',
+      'paper': '🖐️'
+    };
+
+    function updateUI() {
+      document.getElementById('playerHealth').textContent = '❤️'.repeat(playerLives);
+      document.getElementById('botHealth').textContent = '❤️'.repeat(botLives);
+
+      if (playerLives === 0) {
+        document.getElementById('playerAvatar').classList.add('dead');
+      }
+      if (botLives === 0) {
+        document.getElementById('botAvatar').classList.add('dead');
+      }
+    }
+
     function play(playerChoice) {
-      const choices = ['gunting', 'batu', 'kertas'];
+      if (playerLives <= 0 || botLives <= 0) return;
+
+      const choices = ['scissors', 'rock', 'paper'];
       const botChoice = choices[Math.floor(Math.random() * 3)];
+
+      document.getElementById('playerMove').textContent = emojis[playerChoice];
+      document.getElementById('botMove').textContent = emojis[botChoice];
+
       let result = '';
 
       if (playerChoice === botChoice) {
-        result = `Seri! Kamu dan Bot memilih ${botChoice}.`;
+        result = 'Draw! Both dodged the bullet.';
       } else if (
-        (playerChoice === 'gunting' && botChoice === 'kertas') ||
-        (playerChoice === 'batu' && botChoice === 'gunting') ||
-        (playerChoice === 'kertas' && botChoice === 'batu')
+        (playerChoice === 'scissors' && botChoice === 'paper') ||
+        (playerChoice === 'rock' && botChoice === 'scissors') ||
+        (playerChoice === 'paper' && botChoice === 'rock')
       ) {
-        result = `Menang! Kamu memilih ${playerChoice}, Bot memilih ${botChoice}.`;
+        result = 'You win! Enemy gets shot!';
+        botLives--;
       } else {
-        result = `Kalah! Kamu memilih ${playerChoice}, Bot memilih ${botChoice}.`;
+        result = 'You lose! You got shot!';
+        playerLives--;
       }
 
+      updateUI();
       document.getElementById('result').textContent = result;
+
+      if (playerLives === 0 || botLives === 0) {
+        document.getElementById('gameOver').textContent =
+          playerLives > botLives ? '🎉 Victory! You survived the game.' :
+          botLives > playerLives ? '💀 Game Over. You were eliminated.' :
+          '🤝 It\'s a draw!';
+      }
     }
   </script>
 </body>
